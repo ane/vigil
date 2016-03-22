@@ -73,19 +73,19 @@ function in an idempotent manner."
 (defn- stop-watcher
   [watcher]
   (doto (:thread watcher)
-        .interrupt
-        .join)
+    .interrupt
+    .join)
   (.close (:watcher watcher)))
 
 (defn- read-initial
   [file initial? s cursor]
   (with-open [src (RandomAccessFile. file "r")
-                        f (io/reader (java.io.FileInputStream. (.getFD src)))]
-              (let [lines (line-seq f)]
-                (when initial?
-                  (s/put! s (doall lines)))
-                (dosync
-                 (ref-set cursor (.getFilePointer src))))))
+              f (io/reader (java.io.FileInputStream. (.getFD src)))]
+    (let [lines (line-seq f)]
+      (when initial?
+        (s/put! s (doall lines)))
+      (dosync
+       (ref-set cursor (.getFilePointer src))))))
 
 (defn watch-file
   [^String file & {:keys [initial? buffer-size throttle] :or {initial? true buffer-size 1 throttle 1000}}]
