@@ -32,14 +32,13 @@ function in an idempotent manner."
 
 (defn- make-watcher
   [file cursor s throttle]
-  (hawk/watch! {:watcher :polling}
-               [{:paths [file]
+  (hawk/watch! [{:paths [file]
                  :handler (fn [_ _]
                             (dosync
                              (ref-set cursor (read-update s file @cursor throttle))))}]))
 
 (defn file
-  [^String file & {:keys [initial? buffer-size throttle] :or {initial? true buffer-size 1 throttle 100}}]
+  [^String file & {:keys [initial? buffer-size throttle] :or {initial? true buffer-size 1 throttle 1000}}]
   "Watches `file` for changes on disk and returns a Manifold stream
   representing its content returning sequences of lines. By closing
   the stream you kill the watch process. The watcher contains a cursor
@@ -50,7 +49,7 @@ Takes an optional map of parameters.
 |:---|:---
 | `initial?` | push the initial contents of the file into the stream, defaults to `true`.
 | `buffer-size n` | the size of the stream buffer, defaults to 1.
-| `throttle n` | wait up to n milliseconds when pushing new content to the stream sink, i.e. how long will the watcher wait for the stream to accept new content. If `n` milliseconds pass before new content is accepted, the cursor does not advance."
+| `throttle n` | wait up to n milliseconds when pushing new content to the stream sink, i.e. how long will the watcher wait for the stream to accept new content. If `n` milliseconds pass before new content is accepted, the cursor does not advance, defaults to 1000 ms."
   (let [as-f (as-file file)]
     (when (.exists as-f)
       (let [s (s/stream buffer-size)]
@@ -60,7 +59,7 @@ Takes an optional map of parameters.
                         f (io/reader (java.io.FileInputStream. (.getFD src)))]
               (let [lines (line-seq f)]
                 (when initial?
-                  (s/put! s lines))
+                  (s/put! s (doall lines)))
                 (dosync
                  (ref-set cursor (.getFilePointer src)))))
             (try
