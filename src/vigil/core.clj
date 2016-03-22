@@ -1,11 +1,14 @@
 (ns vigil.core
   (:require [clojure.java.io :as io :refer [as-file]]
             [clojure.string :refer [split-lines]]
-            [hawk.core :as hawk]
-            [manifold
-             [deferred :as d]
-             [stream :as s]])
-  (:import java.io.RandomAccessFile))
+            [manifold.stream :as s])
+  (:import java.io.RandomAccessFile
+           (java.nio.file FileSystems
+                          Path
+                          StandardWatchEventKinds
+                          WatchService
+                          WatchEvent
+                          WatchKey)))
 
 (defn- read-to-end
   "Reads `path` to the end starting from `pos`."
@@ -24,20 +27,67 @@ content.  If the stream did not accept the content after `freq`
 milliseconds, it returns the old value, so you can keep calling this
 function in an idempotent manner."
   (when-not (s/closed? stream)
-    (let [[cont new-pos] (read-to-end file pos)
-          succ @(s/try-put! stream cont freq :fail)]
-      (case succ
-        :fail pos
-        true  new-pos))))
+    (let [[cont new-pos] (read-to-end file pos)]
+      (if-not (empty? cont)
+        (case @(s/try-put! stream cont freq :fail)
+          :fail pos
+          true  new-pos)
+        pos))))
+
+(defn- handle-event
+  [watch-key file callback]
+  (doseq [ev (.pollEvents watch-key)]
+    (let [kind (.kind ev)
+          context (.context ev)
+          abs-path (.toAbsolutePath
+                    (.resolve (.watchable watch-key)
+                              (.getName file)))
+          test-path (.toPath file)]
+      (when (.equals test-path abs-path)
+        (callback abs-path kind context)))
+    (.reset watch-key)))
+
+(defn- handler
+  [cursor stream file throttle]
+  (fn [& _] (dosync (ref-set cursor (read-update stream file @cursor throttle)))))
 
 (defn- make-watcher
-  [file cursor s throttle]
-  (hawk/watch! [{:paths [file]
-                 :handler (fn [_ _]
-                            (dosync
-                             (ref-set cursor (read-update s file @cursor throttle))))}]))
+  [file-path cursor s throttle]
+  (let [fs (FileSystems/getDefault)
+        watcher (.newWatchService fs)
+        file (as-file file-path)
+        path (.getPath fs (.getParent file) (make-array String 0))]
+    (.register path watcher (into-array [StandardWatchEventKinds/ENTRY_MODIFY]))
+    {:thread
+     (doto
+         (Thread.
+          (fn []
+            (loop []
+              (if-let [watch-key (.poll watcher)]
+                (handle-event watch-key file (handler cursor s file-path throttle)))
+              (Thread/sleep throttle)
+              (recur))))
+       .start)
+     :watcher watcher}))
 
-(defn file
+(defn- stop-watcher
+  [watcher]
+  (doto (:thread watcher)
+        .interrupt
+        .join)
+  (.close (:watcher watcher)))
+
+(defn- read-initial
+  [file initial? s cursor]
+  (with-open [src (RandomAccessFile. file "r")
+                        f (io/reader (java.io.FileInputStream. (.getFD src)))]
+              (let [lines (line-seq f)]
+                (when initial?
+                  (s/put! s (doall lines)))
+                (dosync
+                 (ref-set cursor (.getFilePointer src))))))
+
+(defn watch-file
   [^String file & {:keys [initial? buffer-size throttle] :or {initial? true buffer-size 1 throttle 1000}}]
   "Watches `file` for changes on disk and returns a Manifold stream
   representing its content returning sequences of lines. By closing
@@ -55,21 +105,14 @@ Takes an optional map of parameters.
       (let [s (s/stream buffer-size)]
         (future
           (let [cursor (ref 0)]
-            (with-open [src (RandomAccessFile. file "r")
-                        f (io/reader (java.io.FileInputStream. (.getFD src)))]
-              (let [lines (line-seq f)]
-                (when initial?
-                  (s/put! s (doall lines)))
-                (dosync
-                 (ref-set cursor (.getFilePointer src)))))
+            (read-initial file initial? s cursor)
             (try
               (let [watcher (make-watcher file cursor s throttle)]
-                (println "watcher online")
                 (loop []
                   (Thread/sleep throttle)
                   (when-not (s/closed? s)
                     (recur)))
-                (hawk/stop! watcher))
+                (stop-watcher watcher))
               (catch java.io.IOException e
                 (println (.getMessage e))
                 (s/close! s)))))
