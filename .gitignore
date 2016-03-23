@@ -1,6 +1,7 @@
 /target
 /classes
 /checkouts
+resources/testfile
 pom.xml
 pom.xml.asc
 *.jar

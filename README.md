@@ -1,7 +1,7 @@
 # Vigil
 
 **vigil** exposes files as [Manifold](https://github.com/ztellman/manifold)
-streams. You *watch* a file and that stream outputs a dataflow of its line-oriented contents. The
+streams. You *watch* a file and that stream represents a dataflow of its line-oriented contents. The
 watcher reacts to file system changes and pushes new content via the stream, and updates its cursor
 to the new position.
 
