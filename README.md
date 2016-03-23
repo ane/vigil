@@ -1,9 +1,10 @@
 # ![Vigil](./doc/vigil.png)
 
-**Vigil** creates [Manifold](https://github.com/ztellman/manifold)
-streams of files. You *watch* a file and that stream outputs a dataflow of its line-oriented contents. The
-watcher reacts to file system changes and pushes new content via the stream, and updates its cursor
-to the new position.
+**Vigil** creates [Manifold](https://github.com/ztellman/manifold) streams from files.  You place a
+*watcher* on a file and the stream produces content as new content is appended to the file.
+
+Vigil can be used to monitor logs asynchronously as a stream. If you are creating an event-driven
+system, it's easy to create an event filter with Vigil.
 
 Because the produced streams are Manifold streams, which acts as a general-purpose compability
 layer, the file streams can be easily
@@ -35,7 +36,7 @@ promises, the list goes on. See the [example](#example).
 ## Usage
 
 The watcher can be stopped at any time by closing the stream. If you don't want to receive the
-initial content, pass `:initial? false` to `file`.
+initial content, pass `false` to the `initial` parameter in `watch-file`.
 
 ### Example
 
@@ -52,9 +53,11 @@ initial content, pass `:initial? false` to `file`.
        (println stuff)
        (recur))))
        
-;; append content into /foo/bar/baz
-       
 (Thread/sleep 60000)
+
+;; append content into /foo/bar/baz
+;; ... and it shall be printed
+
 (s/close! fs)
 
 ```
