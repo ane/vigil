@@ -15,24 +15,27 @@
   [^String path ^Long pos]
   (with-open [src (RandomAccessFile. path "r")]
     (let [length (.length src)]
-      (when (<= pos length)
+      (if (<= pos length)
         (with-open [buf (java.io.FileInputStream. (.getFD src))]
-          (.skipBytes src (dec pos))
-          [(filter #(not (empty? %)) (split-lines (slurp buf))) length])))))
+          (.skipBytes src (- pos (if (< 0 pos) 1 0)))
+          [(filter #(not (empty? %)) (split-lines (slurp buf))) length])
+        ["" 0]))))
 
-(defn- read-update [stream file pos freq]
+(defn- read-update [stream file old-pos freq]
   "Reads the content of `file` from `pos` and dumps them into `stream`.
 Returns the new position where we read, if the stream accepted the
 content.  If the stream did not accept the content after `freq`
 milliseconds, it returns the old value, so you can keep calling this
 function in an idempotent manner."
   (when-not (s/closed? stream)
-    (let [[cont new-pos] (read-to-end file pos)]
+    (let [[cont new-pos] (read-to-end file old-pos)]
       (if-not (empty? cont)
         (case @(s/try-put! stream cont freq :fail)
-          :fail pos
+          :fail old-pos
           true  new-pos)
-        pos))))
+        (if (< new-pos old-pos) ; truncated?
+          new-pos
+          old-pos)))))
 
 (defn- handle-event
   [watch-key file callback]
@@ -111,7 +114,7 @@ Takes an optional parameters.
               (let [watcher (make-watcher file cursor s throttle)]
                 (loop []
                   (Thread/sleep throttle)
-                  (when-not (s/closed? s)
+                  (when (and (not (s/closed? s)) (.exists as-f))
                     (recur)))
                 (stop-watcher watcher))
               (catch java.io.IOException e
