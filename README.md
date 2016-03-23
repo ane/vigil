@@ -49,7 +49,8 @@ initial content, pass `:initial? false` to `file`.
 (let [ch (s/connect fs (a/chan))]
   (go-loop
     (when-let [stuff (a/<! ch)]
-       (println stuff)))
+       (println stuff)
+       (recur))))
        
 ;; append content into /foo/bar/baz
        
