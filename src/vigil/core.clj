@@ -10,7 +10,7 @@
                           WatchEvent
                           WatchKey)))
 
-(defn- read-to-end
+(defn read-to-end
   "Reads `path` to the end starting from `pos`."
   [^String path ^Long pos]
   (with-open [src (RandomAccessFile. path "r")]
@@ -21,7 +21,7 @@
           [(filter #(not (empty? %)) (split-lines (slurp buf))) length])
         ["" 0]))))
 
-(defn- read-update [stream file old-pos freq]
+(defn read-update [stream file old-pos freq]
   "Reads the content of `file` from `pos` and dumps them into `stream`.
 Returns the new position where we read, if the stream accepted the
 content.  If the stream did not accept the content after `freq`
@@ -78,7 +78,7 @@ function in an idempotent manner."
   (future-cancel future)
   (.close watcher))
 
-(defn- read-initial
+(defn read-initial
   [file initial? s cursor]
   (with-open [src (RandomAccessFile. file "r")
               f (io/reader (java.io.FileInputStream. (.getFD src)))]
