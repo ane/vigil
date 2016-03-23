@@ -1,12 +1,12 @@
-# Vigil
+# ![Vigil](./doc/vigil.png)
 
-**vigil** exposes files as [Manifold](https://github.com/ztellman/manifold)
+**Vigil** exposes files as [Manifold](https://github.com/ztellman/manifold)
 streams. You *watch* a file and that stream outputs a dataflow of its line-oriented contents. The
 watcher reacts to file system changes and pushes new content via the stream, and updates its cursor
 to the new position.
 
 ``` clojure
-(require [vigil.core :as v])
+(require '[vigil.core :as v])
 
 ;; /foo/bar/baz contains "hello\nworld"
 (def stream (v/watch-file "/foo/bar/baz"))
