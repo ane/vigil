@@ -6,8 +6,8 @@
 Vigil can be used to monitor logs asynchronously as a stream. If you are creating an event-driven
 system, it's easy to create an event filter with Vigil.
 
-Because the produced streams are Manifold streams, which acts as a general-purpose compability
-layer, the file streams can be easily
+Because the produced streams are Manifold streams, which act as a general-purpose compability
+layers for asynchronous communication, the file streams can be easily
 [connected](https://github.com/ztellman/manifold/blob/master/docs/stream.md) into other 
 Clojure constructs, such as [core.async](https://github.com/clojure/core.async), lazy sequences,
 promises, the list goes on. See the [example](#example).
