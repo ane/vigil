@@ -1,4 +1,4 @@
-# ![Vigil](./doc/vigil.png) Vigil
+# ![Vigil](./doc/vigil.png)
 
 **Vigil** exposes files as [Manifold](https://github.com/ztellman/manifold)
 streams. You *watch* a file and that stream outputs a dataflow of its line-oriented contents. The
