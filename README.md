@@ -1,7 +1,9 @@
-# ![Vigil](./doc/vigil.png) 
-[![Build Status](https://travis-ci.org/ane/vigil.svg?branch=master)](https://travis-ci.org/ane/vigil)
+# ![Vigil](./doc/vigil.png)
+```clojure
+[vigil "0.1.0-SNAPSHOT"]
+```
 
-`[vigil "0.1.0-SNAPSHOT"]`
+[![Build Status](https://travis-ci.org/ane/vigil.svg?branch=master)](https://travis-ci.org/ane/vigil)
 
 **Vigil** creates [Manifold](https://github.com/ztellman/manifold) streams from files.  You place a
 *watcher* on a file and the stream produces content as new content is appended to the file.
