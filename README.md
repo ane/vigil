@@ -15,7 +15,8 @@ Clojure constructs, such as [core.async](https://github.com/clojure/core.async),
 promises, the list goes on. See the [example](#example).
 
 ``` clojure
-(require '[vigil.core :as v])
+(require '[vigil.core :as v]
+         '[manifold.stream :as s])
 
 ;; /foo/bar/baz contains "hello\nworld"
 (def stream (v/watch-file "/foo/bar/baz"))
