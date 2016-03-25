@@ -17,7 +17,7 @@
     (let [length (.length src)]
       (if (<= pos length)
         (with-open [buf (java.io.FileInputStream. (.getFD src))]
-          (.skipBytes src (- pos (if (< 0 pos) 1 0)))
+          (.skipBytes src pos)
           [(filter #(not (empty? %)) (split-lines (slurp buf))) length])
         ["" 0]))))
 
