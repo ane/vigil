@@ -21,12 +21,13 @@
           [(filter #(not (empty? %)) (split-lines (slurp buf))) length])
         ["" 0]))))
 
-(defn read-update [stream file old-pos freq]
+(defn read-update
   "Reads the content of `file` from `pos` and dumps them into `stream`.
 Returns the new position where we read, if the stream accepted the
 content.  If the stream did not accept the content after `freq`
 milliseconds, it returns the old value, so you can keep calling this
 function in an idempotent manner."
+  [stream file old-pos freq]
   (when-not (s/closed? stream)
     (let [[cont new-pos] (read-to-end file old-pos)]
       (if-not (empty? cont)
@@ -79,28 +80,29 @@ function in an idempotent manner."
   (.close watcher))
 
 (defn read-initial
-  [file initial? s cursor]
-  (with-open [src (RandomAccessFile. file "r")
-              f (io/reader (java.io.FileInputStream. (.getFD src)))]
-    (let [lines (line-seq f)]
-      (when initial?
-        (s/put! s (doall lines)))
-      (dosync
-       (ref-set cursor (.getFilePointer src))))))
+  "Reads the content of file, dump it into `stream` (a stream sink), return how
+  much was read.  If :initial is false, don't dump them into a sink."
+  [file sink & {:keys [initial]}]
+  (let [cont (slurp file)
+        lines (split-lines cont)]
+    (when initial
+      (doall lines))
+    (count cont)))
 
 (defn watch-file
-  [^String file & [initial? buffer-size throttle]]
   "Watches `file` for changes on disk and returns a Manifold stream
   representing its content returning sequences of lines. By closing
   the stream you kill the watch process. The watcher contains a cursor
   that updates every time content is pushed successfully into the
   returned stream.
 
-Takes an optional parameters.
-|:---|:---
-| `initial?` | push the initial contents of the file into the stream, defaults to `true`.
-| `buffer-size` | the size of the stream buffer, defaults to 1.
-| `throttle` | wait up to n milliseconds when pushing new content to the stream sink, i.e. how long will the watcher wait for the stream to accept new content. If `n` milliseconds pass before new content is accepted, the cursor does not advance, defaults to 1000 ms."
+  Optional parameters can be specified as follows:
+
+  |:---|:---
+  | `initial?` | push the initial contents of the file into the stream, defaults to `true`.
+  | `buffer-size` | the size of the stream buffer, defaults to 1.
+  | `throttle` | wait up to n milliseconds when pushing new content to the stream sink, i.e. how long will the watcher wait for the stream to accept new content. If `n` milliseconds pass before new content is accepted, the cursor does not advance, defaults to 1000 ms."
+  [^String file & [initial? buffer-size throttle]]
   (let [as-f (as-file file)
         initial? (or initial? true)
         buffer-size (or buffer-size 1)
@@ -108,17 +110,16 @@ Takes an optional parameters.
     (when (.exists as-f)
       (let [s (s/stream buffer-size)]
         (future
-          (let [cursor (ref 0)]
-            (read-initial file initial? s cursor)
+          (let [cursor (ref (read-initial file s :initial initial?))
+                watcher (make-watcher file cursor s throttle)]
             (try
-              (let [watcher (make-watcher file cursor s throttle)]
-                (loop []
-                  (Thread/sleep throttle)
-                  (when (and (not (s/closed? s)) (.exists as-f))
-                    (recur)))
-                (stop-watcher watcher))
+              (loop []
+                (Thread/sleep throttle)
+                (when (and (not (s/closed? s)) (.exists as-f))
+                  (recur)))
               (catch java.io.IOException e
                 (println (.getMessage e))
-                (s/close! s)))))
+                (s/close! s))
+              (finally (stop-watcher watcher)))))
         s)))) 
 
