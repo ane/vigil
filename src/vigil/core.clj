@@ -86,7 +86,7 @@ function in an idempotent manner."
   (let [cont (slurp file)
         lines (split-lines cont)]
     (when initial
-      (s/put! s lines))
+      (s/put! sink lines))
     (count cont)))
 
 (defn watch-file
