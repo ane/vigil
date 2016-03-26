@@ -1,4 +1,7 @@
-# ![Vigil](./doc/vigil.png) [![Build Status](https://travis-ci.org/ane/vigil.svg?branch=master)](https://travis-ci.org/ane/vigil)
+# ![Vigil](./doc/vigil.png)
+[![Build Status](https://travis-ci.org/ane/vigil.svg?branch=master)](https://travis-ci.org/ane/vigil)
+[![Clojars Project](https://img.shields.io/clojars/v/vigil.svg)](https://clojars.org/vigil) 
+[![EPL](https://camo.githubusercontent.com/abf24e4845a7f0721ff08b2a8284ded5d9cfdefa/687474703a2f2f696d672e736869656c64732e696f2f62616467652f6c6963656e73652d45504c2d626c75652e7376673f7374796c653d666c6174)](https://www.eclipse.org/legal/epl-v10.html)
 
 **Vigil** creates [Manifold](https://github.com/ztellman/manifold) streams from files.  You place a
 *watcher* on a file and the stream produces content as new content is appended to the file.
