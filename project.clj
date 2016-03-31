@@ -1,4 +1,4 @@
-(defproject vigil "0.1.0"
+(defproject vigil "0.1.1"
   :description "Watch files as continuous streams"
   :url "http://github.com/ane/vigil"
   :license {:name "Eclipse Public License"
