@@ -40,26 +40,33 @@ promises, the list goes on. See the [example](#example).
 The watcher can be stopped at any time by closing the stream. If you don't want to receive the
 initial content, pass `false` to the `initial` parameter in `watch-file`.
 
-### Example
+### Example: turn a file into a core.async channel
 
 ``` clojure
 (require '[manifold.stream :as s]
          '[vigil.core :as v]
-         '[core.async :as a])
+         '[clojure.core.async :as a])
          
 (def fs (v/watch-file "/foo/bar/baz"))
+(def ch (a/chan))
 
-(let [ch (s/connect fs (a/chan))]
-  (go-loop
-    (when-let [stuff (a/<! ch)]
-       (println stuff)
-       (recur))))
+;; forward fs into ch
+(s/connect fs ch)
+
+(a/go-loop []
+  (when-let [stuff (a/<! ch)]
+    (println stuff)
+    (recur)))
        
 (Thread/sleep 60000)
 
-;; append content into /foo/bar/baz
-;; ... and it shall be printed
+;; append content into /foo/bar/baz (manually)
+;; ... and it shall be printed to *out*
 
+;; if you pass :upstream? true to s/connect,
+;; closing the channel will close fs, thereby
+;; shutting down the watcher
+(a/close! ch)
 (s/close! fs)
 
 ```
