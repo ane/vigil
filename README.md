@@ -13,7 +13,7 @@ layers for asynchronous communication, the file streams can be easily
 Clojure constructs, such as [core.async](https://github.com/clojure/core.async), lazy sequences,
 promises, the list goes on. 
 
-For more information, see the [documentation](https://ane.iki.fi/vigil/).
+For more information, see the [documentation](https://ane.github.io/vigil/).
 
 ``` clojure
 (require '[vigil.core :as v]
@@ -42,7 +42,7 @@ The watcher can be stopped at any time by closing the stream. If you don't want 
 initial content, pass `false` to the `initial` parameter in `watch-file`. If you delete or truncate
 the file, the watcher will stop and the stream will be closed.
 
-For more information, see the [documentation](https://ane.iki.fi/vigil/).
+For more information, see the [documentation](https://ane.github.io/vigil/).
 
 ## License
 
