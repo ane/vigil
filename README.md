@@ -11,7 +11,9 @@ Because the produced streams are Manifold streams, which act as a general-purpos
 layers for asynchronous communication, the file streams can be easily
 [connected](https://github.com/ztellman/manifold/blob/master/docs/stream.md) into other 
 Clojure constructs, such as [core.async](https://github.com/clojure/core.async), lazy sequences,
-promises, the list goes on. See the [example](#example).
+promises, the list goes on. 
+
+For more information, see the [documentation](https://ane.iki.fi/vigil/).
 
 ``` clojure
 (require '[vigil.core :as v]
@@ -34,48 +36,13 @@ promises, the list goes on. See the [example](#example).
 
 ```
 
-
 ## Usage
 
 The watcher can be stopped at any time by closing the stream. If you don't want to receive the
-initial content, pass `false` to the `initial` parameter in `watch-file`.
+initial content, pass `false` to the `initial` parameter in `watch-file`. If you delete or truncate
+the file, the watcher will stop and the stream will be closed.
 
-### Example: turn a file into a core.async channel
-
-``` clojure
-(require '[manifold.stream :as s]
-         '[vigil.core :as v]
-         '[clojure.core.async :as a])
-         
-(def fs (v/watch-file "/foo/bar/baz"))
-(def ch (a/chan))
-
-;; forward fs into ch
-(s/connect fs ch)
-
-(a/go-loop []
-  (when-let [stuff (a/<! ch)]
-    (println stuff)
-    (recur)))
-       
-(Thread/sleep 60000)
-
-;; append content into /foo/bar/baz (manually)
-;; ... and it shall be printed to *out*
-
-;; if you pass :upstream? true to s/connect,
-;; closing the channel will close fs, thereby
-;; shutting down the watcher
-(a/close! ch)
-(s/close! fs)
-
-```
-
-#### Deletion or truncation
-
-If you delete the file, the watcher will stop. Truncating the file will make the watcher reset its
-*cursor* to the beginning. Truncation occurs when the cursor location has been observed to be
-greater than the length of the file.
+For more information, see the [documentation](https://ane.iki.fi/vigil/).
 
 ## License
 
