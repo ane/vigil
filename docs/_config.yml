@@ -17,8 +17,8 @@ title: Vigil
 email: ane@iki.fi
 description: > # this means to ignore newlines until "baseurl:"
   Turn files into asynchronous streams
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://example.com" # the base hostname & protocol for your site
+baseurl: /vigil # the subpath of your site, e.g. /blog
+url: "https://ane.github.io" # the base hostname & protocol for your site
 twitter_username: jekyllrb
 github_username:  jekyll
 picture: ./assets/vigil.png
