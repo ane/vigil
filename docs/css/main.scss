@@ -1,0 +1,50 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+@charset "utf-8";
+
+$bodyFont: "PT Serif", serif;
+$preFont: "Source Code Pro Medium", "Droid Sans Mono", "DejaVu Sans Mono", "Consolas", "Monaco", monospace;
+$linkColor: #990000;
+$visitedLinkColor: #880000;
+
+.text-primary {
+    color: $linkColor !important;
+}
+
+a {
+    color: $linkColor;
+    &:visited {
+        color: $visitedLinkColor;
+    }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "PT Sans", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  color: #313131;
+}
+
+body {
+    font-family: $bodyFont;
+}
+
+p code {
+    color: #B24200;
+}
+
+code {
+    font-size: 80%;
+    padding: .1rem .2rem;
+}
+
+pre, code, tt {
+    font-family: $preFont;
+}
+
+pre.highlight {
+    background-color: #f8f8f8;
+    font-size: 75%;
+    padding: 1rem;
+    border: 1px solid #cccccc;
+}

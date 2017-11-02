@@ -8,7 +8,7 @@
   :plugins [[lein-codox "0.9.4"]]
   :codox {:source-paths ["src"]
           :doc-paths ["doc"]
-          :output-path "docs"
+          :output-path "docs/api"
           :namespaces [vigil.core]
           :source-uri "http://github.com/ane/vigil/blob/master/{filepath}#L{line}"
           :metadata {:doc/format :markdown}})
