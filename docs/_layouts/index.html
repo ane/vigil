@@ -2,24 +2,15 @@
 layout: default
 ---
 
-<div class="row">
-  <div class="col-sm-8">
-    {{ content }}
-  </div>
-  <div class="col-sm-4">
-    <div class="card">
-      <div class="card-header">
-        News
-      </div>
-      <div class="card-body">
-        {% for post in site.posts %}
-          <h5 class="card-title">{{ post.title }}</h5>
-          <h6 class="card-subtitle mb-2 text-muted">{{ post.date | date: "%-d %b %Y"}}</h6>
-          <p class="card-text">{{ post.excerpt }}</p>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
+<div>
+  {{ content }}
 </div>
-
+<div>
+  <h4>News</h4>
+  <ul>
+  {% for post in site.posts %}
+    <li><strong>{{ post.title }}</strong> <span class="text-muted">{{ post.date | date: "%-d %b %Y"}}</span><span>{{ post.excerpt }}</span></li>
+  {% endfor %}
+  </ul>
+</div>
 
