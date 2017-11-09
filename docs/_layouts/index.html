@@ -5,12 +5,4 @@ layout: default
 <div>
   {{ content }}
 </div>
-<div>
-  <h4>News</h4>
-  <ul>
-  {% for post in site.posts %}
-    <li><strong>{{ post.title }}</strong> <span class="text-muted">{{ post.date | date: "%-d %b %Y"}}</span><span>{{ post.excerpt }}</span></li>
-  {% endfor %}
-  </ul>
-</div>
 
